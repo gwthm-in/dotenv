@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -265,4 +266,37 @@ func TestComments(t *testing.T) {
 	}
 
 	loadEnvAndCompareValues(t, Load, envFileName, expectedValues, noopPresets)
+}
+
+func TestOverloadWatchFiles(t *testing.T) {
+	Reset()
+	OptLookupWatchFile("fixtures/plain.env")
+	err := OverloadWatchFiles()
+	require.NoError(t, err)
+	assert.Equal(t, "1", os.Getenv("OPTION_A"))
+}
+
+func TestOptLookupWatchFile(t *testing.T) {
+	Reset()
+	OptLookupWatchFile("test1.env")
+	assert.Contains(t, d.opts.lookupWatchFile, "test1.env")
+
+	OptLookupWatchFile("test2.env")
+	assert.Contains(t, d.opts.lookupWatchFile, "test2.env")
+	assert.Len(t, d.opts.lookupWatchFile, 2)
+}
+
+func TestWatchConfig(t *testing.T) {
+	Reset()
+	WatchConfig()
+	assert.True(t, d.opts.watchConfig)
+}
+
+func TestOnConfigChange(t *testing.T) {
+	Reset()
+	callback := func(event fsnotify.Event) {
+		// Callback function for testing
+	}
+	OnConfigChange(callback)
+	assert.NotNil(t, d.opts.onConfigChange)
 }
