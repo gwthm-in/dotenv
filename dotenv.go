@@ -16,6 +16,8 @@ import (
 var NoFailsToLoadErr = errors.New("[dotenv] No files to load")
 
 type dotenv struct {
+	mu sync.Mutex
+
 	files []string
 	opts  *options
 }
